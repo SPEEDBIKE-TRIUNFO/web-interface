@@ -4,9 +4,13 @@ import Button from "@/components/ui/buttonMaps";
 import { Logo } from "@/components/ui/logo";
 import TabMaps from "@/components/ui/tabMaps";
 import { use, useEffect, useState } from "react";
-import  ButtonGroup  from "@/components/ui/tabMaps";
+import ButtonGroup from "@/components/ui/tabMaps";
+
 
 import Table from 'react-bootstrap/Table';
+import { Upload } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { getExistingMaps, saveMap } from "@/app/server/routes";
 
 const MAX_COLUMN = 16;
 const MAX_LINE = 10;
@@ -15,6 +19,9 @@ const TPS = 100;
 const RPM = 12000;
 
 export default function Matriz1() {
+
+
+
 
 
   const [columns, setColumns] = useState(3); // Começando com 3 colunas
@@ -27,11 +34,11 @@ export default function Matriz1() {
     Array.from({ length: 3 }, () => Array(3).fill('0'))
   );
 
-  const [showIgnitionMap, setShowIgnitionMap] = useState(false)
-  const [showInjectionMap, setShowInjectionMap] = useState(false)
+
+  const [currentMap, setCurrentMap] = useState("injection")
 
   const handleInputChange = (rowIndex, colIndex, value) => {
-    console.log(rowIndex, colIndex, value)
+    // console.log(rowIndex, colIndex, value)
     const updatedTable = [...tableData];
     if (!updatedTable[rowIndex]) {
       updatedTable[rowIndex] = Array(columns).fill(0);
@@ -71,7 +78,7 @@ export default function Matriz1() {
     // Atualiza o estado uma única vez após o loop
     setRowLabel(myArray);
 
-    console.log(myArray); // Verifica o array criado
+    // console.log(myArray); // Verifica o array criado
 
   }, [rows]);
 
@@ -92,7 +99,7 @@ export default function Matriz1() {
     // Atualiza o estado uma única vez após o loop
     setColumnLabel(myArray);
 
-    console.log(myArray); // Verifica o array criado
+    // console.log(myArray); // Verifica o array criado
 
   }, [columns]);
 
@@ -109,7 +116,7 @@ export default function Matriz1() {
   };
 
   const addColumn = () => {
-    console.log("addColumn")
+    // console.log("addColumn")
     if (columns >= 16) {
       return;
     }
@@ -118,7 +125,7 @@ export default function Matriz1() {
   };
 
   const removeColumn = () => {
-    console.log("removeColumn")
+    // console.log("removeColumn")
     if (columns > 3) {
       setColumns(columns - 1);
       setTableData(tableData.map(row => row.slice(0, -1)));
@@ -126,16 +133,44 @@ export default function Matriz1() {
   };
 
   const handleClickMap = (mapType) => {
-    if (mapType == "injection") {
-      setShowIgnitionMap(false);
-      setShowInjectionMap(true);
+
+    setCurrentMap(mapType);
+  }
+
+  const handleSaveMap = async () => {
+    const dataToSend = {
+      name: "mapa de teste",
+      type: currentMap == "injection" ? "INJECTION" : "IGNITION",
+      mapIndex: "1",
+      data: JSON.stringify(tableData),// tableData,
+      id_users: "1",
     }
-    if (mapType == "ignition") {
-      setShowInjectionMap(false)
-      setShowIgnitionMap(true)
-      console.log("Clicou em Ignição")
+    console.log(dataToSend);
+    const serverResponse = await saveMap(dataToSend)
+
+    if (serverResponse.status === 201) {
+      console.log("mapa salvo")
+    } else {
+      // console.log("erro ao salvar mapa")
     }
   }
+
+  useEffect(() => {
+    const getMaps = async (currentMap) => {
+      const response = await getExistingMaps(1, currentMap); //MAPA_1
+      if (response.status === 200) {
+        const data = await response.json();
+        console.log((data.mapas[0]))
+        setRows(data.mapas[0].numberOfLines);
+        setColumns(data.mapas[0].numberOfColumns);
+        setTableData(JSON.parse(data.mapas[0].data));
+
+      }
+    }
+
+    getMaps(currentMap);
+
+  }, [currentMap])
 
   return (
     <div className="flex flex-col space-y-4">
@@ -145,8 +180,8 @@ export default function Matriz1() {
           <Logo size={150} />
         </header >
 
-        <div className=" mr-10 gap-10  items-center flex flex-row"> 
-        <button type="button" className="hover:text-[#94BA1D] "
+        <div className=" mr-10 gap-10  items-center flex flex-row">
+          <button type="button" className="hover:text-[#94BA1D] "
             onClick={() => console.log("botao de logout")}>
             Configurações
           </button>
@@ -160,14 +195,25 @@ export default function Matriz1() {
 
       </div>
 
-
-      <div className="flex justify-center mb-1" >
-        <ButtonGroup handleClickMap={handleClickMap} />
+      <div className="relative flex justify-center mb-1 flex-row">
+        <div className="absolute left-4  ">
+          <button
+            onClick={() => handleSaveMap()}
+            type="button"
+            className="flex items-center text-white p-2 border border-red rounded-xl hover:bg-slate-700">
+            Salvar Mapa
+            <Upload size={20} className="ml-2" />
+          </button>
+        </div>
+        <div className="flex">
+          <ButtonGroup handleClickMap={handleClickMap} />
+        </div>
       </div>
+
 
       <hr />
 
-      <h2 className="text-3xl text-center  mt-4 "> Mapa de {showIgnitionMap ? "Ignição" : "Injeção"} </h2>
+      <h2 className="text-3xl text-center  mt-4 "> Mapa de {currentMap} </h2>
 
       <div className="flex flex-row items-center space-y-4">
         <div>
