@@ -1,8 +1,5 @@
 'use client'
-import ButtonUser from "@/components/ui/buttonMaps";
-import Button from "@/components/ui/buttonMaps";
 import { Logo } from "@/components/ui/logo";
-import TabMaps from "@/components/ui/tabMaps";
 import { use, useEffect, useState } from "react";
 import ButtonGroup from "@/components/ui/tabMaps";
 
@@ -19,10 +16,6 @@ const TPS = 100;
 const RPM = 12000;
 
 export default function Matriz1() {
-
-
-
-
 
   const [columns, setColumns] = useState(3); // Começando com 3 colunas
   const [rows, setRows] = useState(3); // Começando com 3 linhas
@@ -53,11 +46,6 @@ export default function Matriz1() {
       return;
     }
 
-    // Verifica se existe algum valor em rowLabel[1], caso contrário, usa 0
-    // const previousLabel = rowLabel.length > 1 ? rowLabel[1] : 0;
-
-
-    // Adiciona uma nova linha à tabela, mantendo as colunas existentes com '0'
     setRows(rows + 1);
     setTableData([...tableData, Array(columns).fill('0')]);
   };
@@ -66,11 +54,9 @@ export default function Matriz1() {
     let lastValue = 0;
     let myArray = [];
 
-    // Calcula o incremento uma única vez fora do loop
     let incremento = TPS / rows;
 
     for (let i = 0; i < rows; i++) {
-      // Adiciona o incremento ao último valor
       lastValue += incremento;
       myArray.push(lastValue.toFixed()); // Armazena os valores no array local
     }
@@ -78,7 +64,7 @@ export default function Matriz1() {
     // Atualiza o estado uma única vez após o loop
     setRowLabel(myArray);
 
-    // console.log(myArray); // Verifica o array criado
+    // console.log(myArray);
 
   }, [rows]);
 
@@ -87,19 +73,15 @@ export default function Matriz1() {
     let lastValue = 0;
     let myArray = [];
 
-    // Calcula o incremento uma única vez fora do loop
     let incremento = RPM / columns;
 
     for (let i = 0; i < columns; i++) {
-      // Adiciona o incremento ao último valor
       lastValue += incremento;
-      myArray.push(lastValue.toFixed()); // Armazena os valores no array local
+      myArray.push(lastValue.toFixed());
     }
 
-    // Atualiza o estado uma única vez após o loop
     setColumnLabel(myArray);
 
-    // console.log(myArray); // Verifica o array criado
 
   }, [columns]);
 
@@ -116,7 +98,6 @@ export default function Matriz1() {
   };
 
   const addColumn = () => {
-    // console.log("addColumn")
     if (columns >= 16) {
       return;
     }
@@ -125,7 +106,6 @@ export default function Matriz1() {
   };
 
   const removeColumn = () => {
-    // console.log("removeColumn")
     if (columns > 3) {
       setColumns(columns - 1);
       setTableData(tableData.map(row => row.slice(0, -1)));
@@ -158,13 +138,12 @@ export default function Matriz1() {
   useEffect(() => {
     const getMaps = async (currentMap) => {
       const response = await getExistingMaps(1, currentMap); //MAPA_1
+
       if (response.status === 200) {
         const data = await response.json();
-        console.log((data.mapas[0]))
         setRows(data.mapas[0].numberOfLines);
         setColumns(data.mapas[0].numberOfColumns);
         setTableData(JSON.parse(data.mapas[0].data));
-
       }
     }
 
@@ -190,9 +169,7 @@ export default function Matriz1() {
             onClick={() => console.log("botao de logout")}>
             Sair
           </button>
-
         </div>
-
       </div>
 
       <div className="relative flex justify-center mb-1 flex-row">
@@ -213,7 +190,7 @@ export default function Matriz1() {
 
       <hr />
 
-      <h2 className="text-3xl text-center  mt-4 "> Mapa de {currentMap} </h2>
+      <h2 className="text-3xl text-center  mt-4 "> Mapa de {currentMap == "injection" ? "Injecão" : "Ignição"} </h2>
 
       <div className="flex flex-row items-center space-y-4">
         <div>
@@ -256,7 +233,6 @@ export default function Matriz1() {
               </tbody>
             </table>
           </div>
-
         </div>
       </div>
 
@@ -264,22 +240,30 @@ export default function Matriz1() {
       <div className="flex flex-row justify-center items-center fixed bottom-0 left-0 right-0 w-full p-2 z-50 space-x-3">
 
         <div className="flex flex-col justify-center items-center mt-4 gap-2">
-          <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={addRow}>Adicionar Linha</button>
-          <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={removeRow}>Remove Linha</button>
+          <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            onClick={addRow}>
+            Adicionar Linha
+          </button>
+          <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            onClick={removeRow}>
+            Remove Linha
+          </button>
           {/* <Button.Add title="Adicionar Linha" onClick={() => console.log("teste")} />
           <Button.Delete title="Remover Linha" onClick={removeRow} />  */}
         </div>
         <div className="flex flex-col justify-center items-center mt-4 gap-2">
-
-          <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={addColumn}>Adicionar Coluna</button>
-          <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={removeColumn}>Remove Coluna</button>
-
+          <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            onClick={addColumn}>
+            Adicionar Coluna
+          </button>
+          <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            onClick={removeColumn}>
+            Remove Coluna
+          </button>
           {/* <Button.Add title="Adicionar Coluna" onClick={addColumn} />
           <Button.Delete title="Remover Coluna" onClick={removeColumn} /> */}
         </div>
-
       </div>
-
     </div>
   )
 }
